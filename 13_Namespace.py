@@ -10,7 +10,7 @@ def string_info(string):
 
 def is_contains(string, list_to_search):
     count_calls()
-    return bool(sum([True if string.lower() == search.lower() else False for search in list_to_search]))
+    return any([True if string.lower() == search.lower() else False for search in list_to_search])
 
 
 calls = 0
