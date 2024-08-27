@@ -12,7 +12,7 @@ class Figure:
             self.__color = (1, 1, 1)
 
         if self.__is_valid_sides(sides):
-            self.__sides = [sides]
+            self.__sides = [*sides]
         else:
             self.__sides = [1 for i in range(self.sides_count)]
 
@@ -41,7 +41,7 @@ class Figure:
     def __is_valid_sides(self, *new_sides):
         if self.sides_count == 1 and isinstance(new_sides, int):
             return True
-        elif not isinstance(new_sides, int) and self.sides_count == len(new_sides):
+        elif not isinstance(new_sides, int) and self.sides_count == len(*new_sides):
             return True
         else:
             return False
@@ -58,11 +58,10 @@ class Figure:
 
 
 class Circle(Figure):
-    sides_count = 1
-
     def __init__(self, color, *sides):
         super().__init__(color, *sides)
         self.__radius = sides[0] / (pi * 2)
+        self.sides_count = 1
 
     def get_square(self):
         return pi * (self.__radius ** 2)
