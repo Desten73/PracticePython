@@ -3,7 +3,6 @@ from runner_and_tournament import Runner, Tournament
 
 
 class TournamentTest(TestCase):
-    all_results = {}
     @classmethod
     def setUpClass(cls):
         cls.all_results = dict()
