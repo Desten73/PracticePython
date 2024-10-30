@@ -1,6 +1,4 @@
 import unittest
-
-from runner import Runner
 from unittest import TestCase
 from runner_and_tournament import Runner, Tournament
 
