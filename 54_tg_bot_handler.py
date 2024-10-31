@@ -16,9 +16,11 @@ async def start(message):
     print("Привет! Я бот помогающий твоему здоровью.")
 
 
-@dp.message(F.text == "test")
+@dp.message(F.text)
 async def all_massages(message):
     print("Введите команду /start, чтобы начать общение.")
 
 if __name__ == "__main__":
     dp.run_polling(bot)
+
+
