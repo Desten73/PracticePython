@@ -6,15 +6,22 @@ from aiogram.filters import CommandStart, Command
 from aiogram.filters.state import State, StatesGroup
 from aiogram.fsm.storage import memory
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import (Message, CallbackQuery, ReplyKeyboardMarkup, KeyboardButton,
+                           InlineKeyboardMarkup, InlineKeyboardButton)
 
 api = open("bot_api.txt", "r").read()
 bot = Bot(token=api, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 bot_memory = memory.MemoryStorage()
 dp = Dispatcher(storage=bot_memory)
+
 keyboard = ReplyKeyboardMarkup(keyboard=[
     [KeyboardButton(text="Рассчитать"), KeyboardButton(text="Информация")]
 ], resize_keyboard=True, input_field_placeholder="Выберите один из пунктов меню")
+
+inline_keyboard = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text="Рассчитать норму калорий", callback_data="calories")],
+    [InlineKeyboardButton(text="Формулы расчёта", callback_data="formulas")]
+])
 
 
 class UserState(StatesGroup):
@@ -32,11 +39,22 @@ async def start(message: Message):
 
 
 @dp.message(F.text == "Рассчитать")
-async def start_calories(message: Message, state: FSMContext):
-    print(message)
-    print(message.text)
+async def main_menu(message: Message):
+    await message.answer("Выберите опцию:", reply_markup=inline_keyboard)
+
+
+@dp.callback_query(F.data == "formulas")
+async def get_formulas(call: CallbackQuery):
+    await call.message.edit_text("Используется упрощенный вариант формулы Миффлина-Сан Жеора:\n"
+                         "10 х вес (кг) + 6,25 x рост (см) – 5 х возраст (г) + 5")
+
+
+@dp.callback_query(F.data == "calories")
+async def start_calories(call: CallbackQuery, state: FSMContext):
+    print(call)
+    print(call.message.text)
     await state.set_state(UserState.age)
-    await message.answer("Введите свой возраст:")
+    await call.message.edit_text("Введите свой возраст:")
 
 
 @dp.message(UserState.age)
