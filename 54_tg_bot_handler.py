@@ -46,7 +46,7 @@ async def main_menu(message: Message):
 @dp.callback_query(F.data == "formulas")
 async def get_formulas(call: CallbackQuery):
     await call.message.edit_text("Используется упрощенный вариант формулы Миффлина-Сан Жеора:\n"
-                         "10 х вес (кг) + 6,25 x рост (см) – 5 х возраст (г) + 5")
+                                 "10 х вес (кг) + 6,25 x рост (см) – 5 х возраст (г) + 5")
 
 
 @dp.callback_query(F.data == "calories")
