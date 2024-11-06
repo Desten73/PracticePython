@@ -15,12 +15,20 @@ bot_memory = memory.MemoryStorage()
 dp = Dispatcher(storage=bot_memory)
 
 keyboard = ReplyKeyboardMarkup(keyboard=[
-    [KeyboardButton(text="Рассчитать"), KeyboardButton(text="Информация")]
+    [KeyboardButton(text="Рассчитать"), KeyboardButton(text="Информация")],
+    [KeyboardButton(text="Купить")]
 ], resize_keyboard=True, input_field_placeholder="Выберите один из пунктов меню")
 
 inline_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text="Рассчитать норму калорий", callback_data="calories")],
     [InlineKeyboardButton(text="Формулы расчёта", callback_data="formulas")]
+])
+
+inline_keyboard_products = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text="Product1", callback_data="product_buying"),
+     InlineKeyboardButton(text="Product2", callback_data="product_buying"),
+     InlineKeyboardButton(text="Product3", callback_data="product_buying"),
+     InlineKeyboardButton(text="Product4", callback_data="product_buying")],
 ])
 
 
@@ -47,6 +55,19 @@ async def main_menu(message: Message):
 async def get_formulas(call: CallbackQuery):
     await call.message.edit_text("Используется упрощенный вариант формулы Миффлина-Сан Жеора:\n"
                                  "10 х вес (кг) + 6,25 x рост (см) – 5 х возраст (г) + 5")
+
+
+@dp.message(F.text == "Купить")
+async def get_buying_list(message: Message):
+    for i in range(1, 5):
+        with open("files/1.png", "rb") as img:
+            await message.answer_photo(img, f"Название: Product{i} | Описание: описание {i} | Цена: {i*100}")
+    await message.answer("Выберите продукт для покупки: ", reply_markup= inline_keyboard_products)
+
+
+@dp.callback_query(F.data == "product_buying")
+async def send_confirm_message(call: CallbackQuery):
+    await call.message.edit_text("Вы успешно приобрели продукт!")
 
 
 @dp.callback_query(F.data == "calories")
