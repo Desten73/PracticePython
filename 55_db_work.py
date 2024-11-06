@@ -13,17 +13,26 @@ balance INTEGER NOT NULL
 )
 ''')
 
-for i in range(1, 11):
-    cursor.execute("INSERT INTO Users (username, email, age, balance) VALUES (?, ?, ?, ?)",
-                   (f"User{i}", f"example{i}@gmail.com", str(i*10), "1000"))
+# for i in range(1, 11):
+#     cursor.execute("INSERT INTO Users (username, email, age, balance) VALUES (?, ?, ?, ?)",
+#                    (f"User{i}", f"example{i}@gmail.com", str(i*10), "1000"))
+#
+# cursor.execute("UPDATE Users SET balance = 500 WHERE id%2 = 1")
+#
+# cursor.execute("DELETE FROM Users WHERE id%3 = 1")
+#
+# cursor.execute("SELECT username, email, age, balance FROM Users WHERE age != 60")
+# for username, email, age, balance in cursor.fetchall():
+#     print(f"Имя: {username} | Почта: {email} | Возраст: {age} | Баланс: {balance}")
 
-cursor.execute("UPDATE Users SET balance = 500 WHERE id%2 = 1")
+cursor.execute("DELETE FROM Users WHERE id = 6")
 
-cursor.execute("DELETE FROM Users WHERE id%3 = 1")
+total_users, = cursor.execute("SELECT COUNT(*) FROM Users").fetchone()
+all_balances, = cursor.execute("SELECT SUM(balance) FROM Users").fetchone()
 
-cursor.execute("SELECT username, email, age, balance FROM Users WHERE age != 60")
-for username, email, age, balance in cursor.fetchall():
-    print(f"Имя: {username} | Почта: {email} | Возраст: {age} | Баланс: {balance}")
+average_balance, = cursor.execute("SELECT AVG(balance) FROM Users").fetchone()
+print(all_balances / total_users)
+print(average_balance)
 
 connection.commit()
 connection.close()
