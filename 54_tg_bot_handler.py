@@ -8,7 +8,9 @@ from aiogram.fsm.storage import memory
 from aiogram.fsm.context import FSMContext
 from aiogram.types import (Message, CallbackQuery, ReplyKeyboardMarkup, KeyboardButton,
                            InlineKeyboardMarkup, InlineKeyboardButton, FSInputFile)
+import crud_functions
 
+crud_functions.initiate_db()
 api = open("bot_api.txt", "r").read()
 bot = Bot(token=api, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 bot_memory = memory.MemoryStorage()
@@ -59,8 +61,10 @@ async def get_formulas(call: CallbackQuery):
 
 @dp.message(F.text == "Купить")
 async def get_buying_list(message: Message):
-    for i in range(1, 5):
-        await message.answer_photo(FSInputFile(f"files/{i}.png"), f"Название: Product{i} | Описание: описание {i} | Цена: {i*100}")
+    products = crud_functions.get_all_products()
+    for product in products:
+        await message.answer_photo(FSInputFile(product[3]), f"Название: {product[1]} | "
+                                                            f"Описание: {product[2]} | Цена: {product[4]}")
     await message.answer("Выберите продукт для покупки: ", reply_markup=inline_keyboard_products)
 
 
