@@ -7,7 +7,7 @@ from aiogram.filters.state import State, StatesGroup
 from aiogram.fsm.storage import memory
 from aiogram.fsm.context import FSMContext
 from aiogram.types import (Message, CallbackQuery, ReplyKeyboardMarkup, KeyboardButton,
-                           InlineKeyboardMarkup, InlineKeyboardButton)
+                           InlineKeyboardMarkup, InlineKeyboardButton, FSInputFile)
 
 api = open("bot_api.txt", "r").read()
 bot = Bot(token=api, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
@@ -60,14 +60,14 @@ async def get_formulas(call: CallbackQuery):
 @dp.message(F.text == "Купить")
 async def get_buying_list(message: Message):
     for i in range(1, 5):
-        with open("files/1.png", "rb") as img:
-            await message.answer_photo(img, f"Название: Product{i} | Описание: описание {i} | Цена: {i*100}")
-    await message.answer("Выберите продукт для покупки: ", reply_markup= inline_keyboard_products)
+        await message.answer_photo(FSInputFile(f"files/{i}.png"), f"Название: Product{i} | Описание: описание {i} | Цена: {i*100}")
+    await message.answer("Выберите продукт для покупки: ", reply_markup=inline_keyboard_products)
 
 
 @dp.callback_query(F.data == "product_buying")
 async def send_confirm_message(call: CallbackQuery):
-    await call.message.edit_text("Вы успешно приобрели продукт!")
+    await call.answer("")
+    await call.message.answer("Вы успешно приобрели продукт!")
 
 
 @dp.callback_query(F.data == "calories")
