@@ -45,7 +45,6 @@ class RegistrationState(StatesGroup):
     username = State()
     email = State()
     age = State()
-    balance = 1000
 
 
 @dp.message(CommandStart())
