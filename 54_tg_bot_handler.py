@@ -9,6 +9,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import (Message, CallbackQuery, ReplyKeyboardMarkup, KeyboardButton,
                            InlineKeyboardMarkup, InlineKeyboardButton, FSInputFile)
 import crud_functions
+import re
 
 crud_functions.initiate_db()
 api = open("bot_api.txt", "r").read()
@@ -18,7 +19,7 @@ dp = Dispatcher(storage=bot_memory)
 
 keyboard = ReplyKeyboardMarkup(keyboard=[
     [KeyboardButton(text="Рассчитать"), KeyboardButton(text="Информация")],
-    [KeyboardButton(text="Купить")]
+    [KeyboardButton(text="Купить"), KeyboardButton(text="Регистрация")]
 ], resize_keyboard=True, input_field_placeholder="Выберите один из пунктов меню")
 
 inline_keyboard = InlineKeyboardMarkup(inline_keyboard=[
@@ -38,6 +39,13 @@ class UserState(StatesGroup):
     age = State()
     growth = State()
     weight = State()
+
+
+class RegistrationState(StatesGroup):
+    username = State()
+    email = State()
+    age = State()
+    balance = 1000
 
 
 @dp.message(CommandStart())
@@ -72,6 +80,58 @@ async def get_buying_list(message: Message):
 async def send_confirm_message(call: CallbackQuery):
     await call.answer("")
     await call.message.answer("Вы успешно приобрели продукт!")
+
+
+@dp.message(F.text == "Регистрация")
+async def sing_up(message: Message, state: FSMContext):
+    await state.set_state(RegistrationState.username)
+    await message.answer("Введите имя пользователя (только латинский алфавит):")
+
+
+@dp.message(RegistrationState.username)
+async def set_username(message: Message, state: FSMContext):
+    print(message)
+    print(message.text)
+    try:
+        if crud_functions.is_included(message.text):
+            raise ValueError
+        await state.update_data(username=message.text)
+        await state.set_state(RegistrationState.email)
+        await message.answer("Введите свой email:")
+    except:
+        await message.reply("Пользователь существует, введите другое имя!")
+
+
+@dp.message(RegistrationState.email)
+async def set_email(message: Message, state: FSMContext):
+    print(message)
+    print(message.text)
+    try:
+        pattern = re.compile(r"^\S+@\S+\.\S+$")
+        if not pattern.match(message.text):
+            raise ValueError
+        await state.update_data(email=message.text)
+        await state.set_state(RegistrationState.age)
+        await message.answer("Введите свой возраст:")
+    except:
+        await message.reply("Попробуйте ввести почту снова!")
+
+
+@dp.message(RegistrationState.age)
+async def set_age(message: Message, state: FSMContext):
+    print(message)
+    print(message.text)
+    try:
+        int(message.text)
+        await state.update_data(age=message.text)
+
+        data = await state.get_data()
+        crud_functions.add_user(data["username"], data["email"], data["age"])
+        await message.answer("Вы успешно зарегистрированы!")
+        await state.clear()
+
+    except:
+        await message.reply("Необходимо вводить целочисленное число!")
 
 
 @dp.callback_query(F.data == "calories")
