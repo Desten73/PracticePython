@@ -1,4 +1,6 @@
-from fastapi import FastAPI, Path, HTTPException
+from fastapi import FastAPI, Path, HTTPException, Request
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
 from typing import Annotated
 from pydantic import BaseModel, Field
 
@@ -14,13 +16,14 @@ class CreateUser(BaseModel):
     age: int = Field(ge=18, le=120, description="Enter age", examples=[24])
 
 
-app = FastAPI()
+app = FastAPI(swagger_ui_parameters={"tryItOutEnabled": True}, debug=True)
+template = Jinja2Templates(directory="templates")
 users: list[User] = []
 
 
-@app.get("/")
-async def main_page() -> str:
-    return "Главная страница"
+@app.get("/", response_class=HTMLResponse)
+async def main_page(request: Request) -> HTMLResponse:
+    return template.TemplateResponse("users.html", {"request": request, "users": users})
 
 
 @app.get("/user/admin")
@@ -28,9 +31,16 @@ async def user_admin() -> str:
     return "Вы вошли как администратор"
 
 
-@app.get("/users")
-async def get_users() -> list[User]:
-    return users
+def get_user_from_id(user_id) -> User:
+    for user in users:
+        if user.id == user_id:
+            return user
+
+
+@app.get("/user/{user_id}", response_class=HTMLResponse)
+async def get_user(request: Request,
+                   user_id: Annotated[int, Path(ge=1, le=100, description="Enter user ID", example=1)]) -> HTMLResponse:
+    return template.TemplateResponse("users.html", {"request": request, "user": get_user_from_id(user_id)})
 
 
 @app.delete("/user/{user_id}")
