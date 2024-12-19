@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Path, HTTPException, Request
+from fastapi import FastAPI, Path, HTTPException, Request, Form
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from typing import Annotated
@@ -63,6 +63,17 @@ async def update_user(
             u.age = user.age
             return u
     raise HTTPException(status_code=404, detail="User was not found")
+
+
+@app.post("/", response_class=HTMLResponse)
+async def add_new_user(request: Request,
+                       username: str = Form(min_length=5, max_length=20, description="Enter username",
+                                            examples=["UrbanUser"]),
+                       age: int = Form(ge=18, le=120, description="Enter age", examples=[24])) -> HTMLResponse:
+    user_id = int(max((u.id for u in users), default=0) + 1)
+    new_user = User(id=user_id, username=username, age=age)
+    users.append(new_user)
+    return template.TemplateResponse("users.html", {"request": request, "users": users})
 
 
 @app.post("/user/{username}/{age}", response_model=User)
